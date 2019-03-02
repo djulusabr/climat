@@ -24,7 +24,7 @@ namespace Climat
 		{
 			ofd = new System.Windows.Forms.OpenFileDialog();
 
-			ofd.Filter = "Archives (*.RAR;*.ZIP;*.7Z)|*.RAR;*.ZIP;*.7Z|Folders|\n";
+			ofd.Filter = "Folders|\n";
 			ofd.AddExtension = false;
 			ofd.CheckFileExists = false;
 			ofd.DereferenceLinks = true;
