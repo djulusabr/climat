@@ -91,5 +91,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClimatLibrary\ClimatLibrary.csproj">
+      <Project>{ff88be09-e44b-40d6-96e3-c9210cb5955d}</Project>
+      <Name>ClimatLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

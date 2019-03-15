@@ -61,9 +61,12 @@ namespace Climat
                 DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
                 IdColumn.Unique = true;
                 IdColumn.AllowDBNull = false;
+                IdColumn.AutoIncrement = true;
+                IdColumn.AutoIncrementSeed = 1;
+                IdColumn.AutoIncrementStep = 1;
 
                 DataColumn StatIdColumn = new DataColumn("StatId", Type.GetType("System.Int32"));
-            
+
                 DataColumn YearColumn = new DataColumn("Year", Type.GetType("System.Int32"));
 
                 DataColumn JanColumn = new DataColumn("Jan", Type.GetType("System.String"));
@@ -169,7 +172,6 @@ namespace Climat
                     statlist = str;
                 else if (fileName.StartsWith("wr"))
                     wr = str;
-                Console.WriteLine(fileName);
             }
             if (statlist.Length > 0 && fld.Length > 0)
             {
@@ -181,7 +183,7 @@ namespace Climat
                         while ((line = sr.ReadLine()) != null)
                         {
                             int id = Convert.ToInt32(line.Substring(0, 5));
-                            string name = line.Substring(6, line.Length - 6);
+                            string name = line.Substring(6);
                             statListTable.Rows.Add(new object[] { id, name });
                         }
                     }
@@ -201,7 +203,7 @@ namespace Climat
                             int id = Convert.ToInt32(line.Substring(0, 2));
                             int colNum = Convert.ToInt32(line.Substring(3, 2));
                             string formatting = line.Substring(6, 7).Replace(" ", string.Empty);
-                            string colName = line.Substring(15, line.Length - 15);
+                            string colName = line.Substring(15);
                             fldTable.Rows.Add(new object[] { id, colNum, formatting, colName });
                         }
                     }
@@ -220,7 +222,7 @@ namespace Climat
                             string line;
                             while ((line = sr.ReadLine()) != null)
                             {
-                                int id = Convert.ToInt32(line.Substring(0, 5));
+                                int statid = Convert.ToInt32(line.Substring(0, 5));
                                 int year = Convert.ToInt32(line.Substring(6, 4));
                                 string jan = line.Substring(11, 5).Replace(" ", string.Empty);
                                 string feb = line.Substring(17, 5).Replace(" ", string.Empty);
@@ -234,7 +236,7 @@ namespace Climat
                                 string oct = line.Substring(65, 5).Replace(" ", string.Empty);
                                 string nov = line.Substring(71, 5).Replace(" ", string.Empty);
                                 string dec = line.Substring(77, 5).Replace(" ", string.Empty);
-                                wrTable.Rows.Add(new object[] { id, statid, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                wrTable.Rows.Add(new object[] { null, statid, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
                             }
                         }
                     }
@@ -245,10 +247,58 @@ namespace Climat
                 }
                 else
                 {
-
+                    foreach (DataRow item in statListTable.Rows)
+                    {
+                        int id = item.Field<int>(statListTable.Columns["Id"]);
+                        string filename = statlist.Substring(0, statlist.LastIndexOf('\\') + 1) + id.ToString() + ".txt";
+                        try
+                        {
+                            using (StreamReader sr = new StreamReader(filename, Encoding.GetEncoding(1251)))
+                            {
+                                string line;
+                                while ((line = sr.ReadLine()) != null)
+                                {
+                                    int statid = Convert.ToInt32(line.Substring(0, 5));
+                                    int year = Convert.ToInt32(line.Substring(6, 4));
+                                    string jan = line.Substring(11, 5).Replace(" ", string.Empty);
+                                    string feb = line.Substring(17, 5).Replace(" ", string.Empty);
+                                    string mar = line.Substring(23, 5).Replace(" ", string.Empty);
+                                    string apr = line.Substring(29, 5).Replace(" ", string.Empty);
+                                    string may = line.Substring(35, 5).Replace(" ", string.Empty);
+                                    string jun = line.Substring(41, 5).Replace(" ", string.Empty);
+                                    string jul = line.Substring(47, 5).Replace(" ", string.Empty);
+                                    string aug = line.Substring(53, 5).Replace(" ", string.Empty);
+                                    string sep = line.Substring(59, 5).Replace(" ", string.Empty);
+                                    string oct = line.Substring(65, 5).Replace(" ", string.Empty);
+                                    string nov = line.Substring(71, 5).Replace(" ", string.Empty);
+                                    string dec = line.Substring(77, 5).Replace(" ", string.Empty);
+                                    wrTable.Rows.Add(new object[] { null, statid, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                }
+                            }
+                        }
+                        catch (IOException ex)
+                        {
+                            MessageBox.Show("Файл не мог быть прочитан:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
                 }
 
                 dataGridView1.DataSource = wrTable;
+                dataGridView1.Columns["Id"].Visible = false;
+                dataGridView1.Columns["StatId"].HeaderText = "Индекс ВМО";
+                dataGridView1.Columns["Year"].HeaderText = "Год";
+                dataGridView1.Columns["Jan"].HeaderText = "Январь";
+                dataGridView1.Columns["Feb"].HeaderText = "Февраль";
+                dataGridView1.Columns["Mar"].HeaderText = "Март";
+                dataGridView1.Columns["Apr"].HeaderText = "Апрель";
+                dataGridView1.Columns["May"].HeaderText = "Май";
+                dataGridView1.Columns["Jun"].HeaderText = "Июнь";
+                dataGridView1.Columns["Jul"].HeaderText = "Июль";
+                dataGridView1.Columns["Aug"].HeaderText = "Август";
+                dataGridView1.Columns["Sep"].HeaderText = "Сентябрь";
+                dataGridView1.Columns["Oct"].HeaderText = "Октябрь";
+                dataGridView1.Columns["Nov"].HeaderText = "Ноябрь";
+                dataGridView1.Columns["Dec"].HeaderText = "Декабрь";
                 MessageBox.Show("Прочитано успешно", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 button2.Enabled = true;
             }
