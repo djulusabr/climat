@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 
 namespace Climat
 {
     public partial class Form1 : Form
     {
+        [DllImport("user32.dll")]
+        private static extern int SendMessage(IntPtr hWnd, Int32 wMsg, bool wParam, Int32 lParam);
+        private const int WM_SETREDRAW = 11;
         DataSet climatSet;
         DataTable statListTable, fldTable, wrTable;
         public Form1()
@@ -175,6 +179,9 @@ namespace Climat
             }
             if (statlist.Length > 0 && fld.Length > 0)
             {
+                statListTable.Clear();
+                fldTable.Clear();
+                wrTable.Clear();
                 try
                 {
                     using (StreamReader sr = new StreamReader(statlist, Encoding.GetEncoding(1251)))
@@ -282,7 +289,8 @@ namespace Climat
                         }
                     }
                 }
-
+                
+                SendMessage(dataGridView1.Handle, WM_SETREDRAW, false, 0);
                 dataGridView1.DataSource = wrTable;
                 dataGridView1.Columns["Id"].Visible = false;
                 dataGridView1.Columns["StatId"].HeaderText = "Индекс ВМО";
@@ -299,6 +307,9 @@ namespace Climat
                 dataGridView1.Columns["Oct"].HeaderText = "Октябрь";
                 dataGridView1.Columns["Nov"].HeaderText = "Ноябрь";
                 dataGridView1.Columns["Dec"].HeaderText = "Декабрь";
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+                SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
+                dataGridView1.Refresh();
                 MessageBox.Show("Прочитано успешно", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 button2.Enabled = true;
             }
