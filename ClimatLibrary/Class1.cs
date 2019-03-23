@@ -8,5 +8,6 @@ namespace ClimatLibrary
 {
     public class Class1
     {
+
     }
 }

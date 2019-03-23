@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
@@ -71,6 +67,8 @@ namespace Climat
 
                 DataColumn StatIdColumn = new DataColumn("StatId", Type.GetType("System.Int32"));
 
+                DataColumn NameColumn = new DataColumn("Name", Type.GetType("System.String"));
+
                 DataColumn YearColumn = new DataColumn("Year", Type.GetType("System.Int32"));
 
                 DataColumn JanColumn = new DataColumn("Jan", Type.GetType("System.String"));
@@ -88,6 +86,7 @@ namespace Climat
 
                 wrTable.Columns.Add(IdColumn);
                 wrTable.Columns.Add(StatIdColumn);
+                wrTable.Columns.Add(NameColumn);
                 wrTable.Columns.Add(YearColumn);
                 wrTable.Columns.Add(JanColumn);
                 wrTable.Columns.Add(FebColumn);
@@ -230,6 +229,7 @@ namespace Climat
                             while ((line = sr.ReadLine()) != null)
                             {
                                 int statid = Convert.ToInt32(line.Substring(0, 5));
+                                string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
                                 int year = Convert.ToInt32(line.Substring(6, 4));
                                 string jan = line.Substring(11, 5).Replace(" ", string.Empty);
                                 string feb = line.Substring(17, 5).Replace(" ", string.Empty);
@@ -243,7 +243,7 @@ namespace Climat
                                 string oct = line.Substring(65, 5).Replace(" ", string.Empty);
                                 string nov = line.Substring(71, 5).Replace(" ", string.Empty);
                                 string dec = line.Substring(77, 5).Replace(" ", string.Empty);
-                                wrTable.Rows.Add(new object[] { null, statid, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
                             }
                         }
                     }
@@ -266,6 +266,7 @@ namespace Climat
                                 while ((line = sr.ReadLine()) != null)
                                 {
                                     int statid = Convert.ToInt32(line.Substring(0, 5));
+                                    string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
                                     int year = Convert.ToInt32(line.Substring(6, 4));
                                     string jan = line.Substring(11, 5).Replace(" ", string.Empty);
                                     string feb = line.Substring(17, 5).Replace(" ", string.Empty);
@@ -279,7 +280,7 @@ namespace Climat
                                     string oct = line.Substring(65, 5).Replace(" ", string.Empty);
                                     string nov = line.Substring(71, 5).Replace(" ", string.Empty);
                                     string dec = line.Substring(77, 5).Replace(" ", string.Empty);
-                                    wrTable.Rows.Add(new object[] { null, statid, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                    wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
                                 }
                             }
                         }
@@ -294,6 +295,7 @@ namespace Climat
                 dataGridView1.DataSource = wrTable;
                 dataGridView1.Columns["Id"].Visible = false;
                 dataGridView1.Columns["StatId"].HeaderText = "Индекс ВМО";
+                dataGridView1.Columns["Name"].HeaderText = "Станция";
                 dataGridView1.Columns["Year"].HeaderText = "Год";
                 dataGridView1.Columns["Jan"].HeaderText = "Январь";
                 dataGridView1.Columns["Feb"].HeaderText = "Февраль";
@@ -321,11 +323,9 @@ namespace Climat
 
         private void button2_Click(object sender, EventArgs e)
         {
+            
             Form2 form2 = new Form2();
             form2.ShowDialog();
-            string ctnName = "richTextBox1";
-            Control ctn = form2.Controls[ctnName];
-            ctn.Text = label1.Text;
         }
     }
 }
