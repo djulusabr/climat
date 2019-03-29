@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Climat
 {
@@ -321,10 +323,45 @@ namespace Climat
             }
         }
 
+        private List<float> GetArrayData()
+        {
+            List<float> list = new List<float>();
+            List<string> months = new List<string>();
+            months.Add("Jan");
+            months.Add("Feb");
+            months.Add("Mar");
+            months.Add("Apr");
+            months.Add("May");
+            months.Add("Jun");
+            months.Add("Jul");
+            months.Add("Aug");
+            months.Add("Sep");
+            months.Add("Oct");
+            months.Add("Nov");
+            months.Add("Dec");
+            foreach (DataRow item in wrTable.Rows)
+            {
+                foreach (string month in months)
+                {
+                    string str = item.Field<string>(wrTable.Columns[month]);
+                    if (!String.IsNullOrEmpty(str))
+                    {
+                        float res;
+                        if (Single.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out res))
+                        {
+                            list.Add(res);
+                        }
+                    }
+                }
+            }
+            list.Sort();
+            return list;
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
             
-            Form2 form2 = new Form2();
+            Form2 form2 = new Form2(GetArrayData());
             form2.ShowDialog();
         }
     }
