@@ -13,33 +13,45 @@ namespace Climat
 {
     public partial class Form2 : Form
     {
-        List<float> list;
+        ClimatData data;
         public Form2(List<float> _list)
         {
             InitializeComponent();
-            this.list = _list;
 
-            List<float> dixon = ClimatLibrary.OutlierTest.Dixon(list);
-            List<float> smirnovGrubbs = ClimatLibrary.OutlierTest.SmirnovGrubbs(list);
+            data = new ClimatData(_list);
+
+            data = OutlierTest.Dixon(data);
+            data = OutlierTest.Dispersion(data);
+            data = OutlierTest.Grubbs(data);
+            data = OutlierTest.Asymmetry(data);
+            data = OutlierTest.Autocorrelation(data);
+            data = OutlierTest.TDistribution(data);
+            data = OutlierTest.Fisher(data);
 
             richTextBox1.Text = "Критерий Диксона:\n";
 
-            richTextBox1.Text += "D1n = " + dixon[0] + "\n";
-            richTextBox1.Text += "D2n = " + dixon[1] + "\n";
-            richTextBox1.Text += "D3n = " + dixon[2] + "\n";
-            richTextBox1.Text += "D4n = " + dixon[3] + "\n";
-            richTextBox1.Text += "D5n = " + dixon[4] + "\n";
-            richTextBox1.Text += "D11 = " + dixon[5] + "\n";
-            richTextBox1.Text += "D21 = " + dixon[6] + "\n";
-            richTextBox1.Text += "D31 = " + dixon[7] + "\n";
-            richTextBox1.Text += "D41 = " + dixon[8] + "\n";
-            richTextBox1.Text += "D51 = " + dixon[9] + "\n\n";
+            richTextBox1.Text += "D1n = " + data.DixonN[0] + "\n";
+            richTextBox1.Text += "D2n = " + data.DixonN[1] + "\n";
+            richTextBox1.Text += "D3n = " + data.DixonN[2] + "\n";
+            richTextBox1.Text += "D4n = " + data.DixonN[3] + "\n";
+            richTextBox1.Text += "D5n = " + data.DixonN[4] + "\n";
+            richTextBox1.Text += "D11 = " + data.Dixon1[0] + "\n";
+            richTextBox1.Text += "D21 = " + data.Dixon1[1] + "\n";
+            richTextBox1.Text += "D31 = " + data.Dixon1[2] + "\n";
+            richTextBox1.Text += "D41 = " + data.Dixon1[3] + "\n";
+            richTextBox1.Text += "D51 = " + data.Dixon1[4] + "\n\n";
 
+            richTextBox1.Text += "Среднее значение = " + data.Y.Average() + "\n";
+            richTextBox1.Text += "Дисперсия = " + data.Dispersion + "\n\n";
+            
             richTextBox1.Text += "Критерий Смирнова-Граббса:\n";
-            richTextBox1.Text += "Среднее значение = " + smirnovGrubbs[0] + "\n";
-            richTextBox1.Text += "Дисперсия = " + smirnovGrubbs[1] + "\n";
-            richTextBox1.Text += "Gn = " + smirnovGrubbs[2] + "\n";
-            richTextBox1.Text += "G1 = " + smirnovGrubbs[3] + "\n";
+            richTextBox1.Text += "Gn = " + data.GrubbsN + "\n";
+            richTextBox1.Text += "G1 = " + data.Grubbs1 + "\n\n";
+            richTextBox1.Text += "Асимметрия = " + data.Asymmetry + "\n";
+            richTextBox1.Text += "Автокорреляция = " + data.Autocorrelation + "\n";
+            richTextBox1.Text += "t-распределение = " + data.TDistribution + "\n\n";
+
+            richTextBox1.Text += "Критерий Фишера = " + data.Fisher + "\n";
         }
 
         private void button1_Click(object sender, EventArgs e)
