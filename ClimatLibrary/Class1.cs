@@ -9,12 +9,16 @@ namespace ClimatLibrary
 {
     public class ClimatData
     {
-        public List<float> Y, DixonN, Dixon1;
-        public float GrubbsN, Grubbs1, Dispersion, Asymmetry, Autocorrelation, TDistribution, Fisher;
+        public List<float> Y, Y1, Y2, DixonN, Dixon1;
+        public float GrubbsN, Grubbs1, Dispersion, Asymmetry, Autocorrelation,
+                     TDistribution, Fisher, FDistribution1, FDistribution2, Dispersion1, Dispersion2,
+                     Student;
 
         public ClimatData(List<float> _Y)
         {
             Y = _Y;
+            Y1 = Y.GetRange(0, Y.Count / 2);
+            Y2 = Y.GetRange(Y.Count / 2 - 1, Y.Count - (Y.Count / 2));
             DixonN = new List<float>();
             Dixon1 = new List<float>();
         }
@@ -54,6 +58,26 @@ namespace ClimatLibrary
             }
 
             data.Dispersion /= n - 1;
+
+            int n1 = data.Y1.Count;
+            int n2 = data.Y2.Count;
+
+            data.Dispersion1 = 0;
+            data.Dispersion2 = 0;
+
+            for (int i = 0; i < n1; i++)
+            {
+                data.Dispersion1 += (float)Math.Pow(data.Y1[0] - data.Y1.Average(), 2);
+            }
+
+            data.Dispersion1 /= n1 - 2;
+
+            for (int i = 0; i < n2; i++)
+            {
+                data.Dispersion2 += (float)Math.Pow(data.Y2[0] - data.Y2.Average(), 2);
+            }
+
+            data.Dispersion2 /= n2 - 2;
 
             return data;
         }
@@ -121,31 +145,77 @@ namespace ClimatLibrary
 
         public static ClimatData Fisher(ClimatData data)
         {
-            int n = data.Y.Count;
-            int m = data.Y.Count / 2;
+            data.Fisher = data.Dispersion1 / data.Dispersion2;
 
-            List<float> Y1 = data.Y.GetRange(0, m);
-            List<float> Y2 = data.Y.GetRange(m - 1, data.Y.Count - m);
+            return data;
+        }
 
-            float Dispersion1 = 0, Dispersion2 = 0;
+        public static ClimatData FDistribution(ClimatData data)
+        {
+            int n1 = data.Y1.Count;
+            int n2 = data.Y2.Count;
 
-            for (int i = 0; i < Y1.Count; i++)
+            float g;
+            switch (Math.Round(data.Asymmetry * 2, MidpointRounding.AwayFromZero) / 2)
             {
-                Dispersion1 += (float)Math.Pow(Y1[0] - Y1.Average(), 2);
+                case 0.0:
+                    g = 1.0f;
+                    break;
+
+                case 0.5:
+                    g = 0.82f;
+                    break;
+
+                case 1.0:
+                    g = 0.62f;
+                    break;
+
+                case 1.5:
+                    g = 0.45f;
+                    break;
+
+                case 2.0:
+                    g = 0.30f;
+                    break;
+
+                case 2.5:
+                    g = 0.24f;
+                    break;
+
+                case 3.0:
+                    g = 0.17f;
+                    break;
+
+                case 3.5:
+                    g = 0.14f;
+                    break;
+
+                case 4.0:
+                    g = 0.10f;
+                    break;
+
+                default:
+                    g = 0.0f;
+                    break;
             }
 
-            Dispersion1 /= Y1.Count - 2;
+            data.FDistribution1 = (n1 * g)
+                                  / ((1 + (2 * (float)Math.Pow(data.Asymmetry, 2)) * (1 - (float)Math.Pow(data.Asymmetry, 2)))
+                                  * (1 - (1 - (float)Math.Pow(data.Asymmetry, 2 * n1)) / (n1 * (1 - (float)Math.Pow(data.Asymmetry, 2)))));
+            data.FDistribution2 = (n2 * g)
+                                  / ((1 + (2 * (float)Math.Pow(data.Asymmetry, 2)) * (1 - (float)Math.Pow(data.Asymmetry, 2)))
+                                  * (1 - (1 - (float)Math.Pow(data.Asymmetry, 2 * n2)) / (n2 * (1 - (float)Math.Pow(data.Asymmetry, 2)))));
 
-            for (int i = 0; i < Y2.Count; i++)
-            {
-                Dispersion2 += (float)Math.Pow(Y2[0] - Y2.Average(), 2);
-            }
+            return data;
+        }
 
-            Dispersion2 /= Y2.Count - 2;
+        public static ClimatData Student(ClimatData data)
+        {
+            int n1 = data.Y1.Count;
+            int n2 = data.Y2.Count;
 
-            data.Fisher = Dispersion1 / Dispersion2;
-
-            //MessageBox.Show("0 to " + m + "\n" + (m-1) + " to " + (data.Y.Count - m), "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            data.Student = (data.Y1.Average() - data.Y2.Average()) / (float)Math.Sqrt(n1 * data.Dispersion1 + n2 * data.Dispersion2)
+                         * (float)Math.Sqrt((n1 * n2 * (n1 + n2 - 2)) / (n1 + n2));
 
             return data;
         }
