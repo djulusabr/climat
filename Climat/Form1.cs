@@ -314,7 +314,6 @@ namespace Climat
                 dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
                 dataGridView1.Refresh();
-                MessageBox.Show("Прочитано успешно", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 button2.Enabled = true;
             }
             else

@@ -27,6 +27,8 @@ namespace Climat
             data = OutlierTest.Autocorrelation(data);
             data = OutlierTest.TDistribution(data);
             data = OutlierTest.Fisher(data);
+            data = OutlierTest.FDistribution(data);
+            data = OutlierTest.Student(data);
 
             richTextBox1.Text = "Критерий Диксона:\n";
 
@@ -51,7 +53,12 @@ namespace Climat
             richTextBox1.Text += "Автокорреляция = " + data.Autocorrelation + "\n";
             richTextBox1.Text += "t-распределение = " + data.TDistribution + "\n\n";
 
-            richTextBox1.Text += "Критерий Фишера = " + data.Fisher + "\n";
+            richTextBox1.Text += "Критерий Фишера = " + data.Fisher + "\n\n";
+
+            richTextBox1.Text += "Степень свободы n1 = " + data.FDistribution1 + "\n";
+            richTextBox1.Text += "Степень свободы n2 = " + data.FDistribution2 + "\n\n";
+
+            richTextBox1.Text += "Критерий Стьюдента = " + data.Student + "\n\n";
         }
 
         private void button1_Click(object sender, EventArgs e)
