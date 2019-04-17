@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ClimatLibrary
 {
@@ -218,6 +219,12 @@ namespace ClimatLibrary
                          * (float)Math.Sqrt((n1 * n2 * (n1 + n2 - 2)) / (n1 + n2));
 
             return data;
+
+            // TODO:
+            // 1. Вывод как в конце методички, таблицами
+            // 2. Весь процесс нужно отдельно по месяцам проводить
+            // 3. Выводить по отдельным станциям
+            // 4. Мб сделать чтобы несколько файлов можно было выбрать
         }
     }
 }

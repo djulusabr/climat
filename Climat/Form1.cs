@@ -164,6 +164,81 @@ namespace Climat
             }
         }
 
+        private void ParseWrTable(string line)
+        {
+            int statid = Convert.ToInt32(line.Substring(0, 5));
+            string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
+            int year = Convert.ToInt32(line.Substring(6, 4));
+
+            List<string> month_list = GetMonthList();
+            int i = 11;
+            string jan = "", feb = "", mar = "", apr = "",
+                   may = "", jun = "", jul = "", aug = "",
+                   sep = "", oct = "", nov = "", dec = "";
+
+            if (month_list.Contains("Jan"))
+            {
+                jan = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Feb"))
+            {
+                feb = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Mar"))
+            {
+                mar = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Apr"))
+            {
+                apr = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("May"))
+            {
+                may = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Jun"))
+            {
+                jun = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Jul"))
+            {
+                jul = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Aug"))
+            {
+                aug = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Sep"))
+            {
+                sep = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Oct"))
+            {
+                oct = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Nov"))
+            {
+                nov = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            if (month_list.Contains("Dec"))
+            {
+                dec = line.Substring(i, 5).Replace(" ", string.Empty);
+                i += 6;
+            }
+            wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+        }
+
         private void ReadFromDirectory(string path)
         {
             var fileList = Directory.GetFiles(path, "*.txt");
@@ -230,22 +305,7 @@ namespace Climat
                             string line;
                             while ((line = sr.ReadLine()) != null)
                             {
-                                int statid = Convert.ToInt32(line.Substring(0, 5));
-                                string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
-                                int year = Convert.ToInt32(line.Substring(6, 4));
-                                string jan = line.Substring(11, 5).Replace(" ", string.Empty);
-                                string feb = line.Substring(17, 5).Replace(" ", string.Empty);
-                                string mar = line.Substring(23, 5).Replace(" ", string.Empty);
-                                string apr = line.Substring(29, 5).Replace(" ", string.Empty);
-                                string may = line.Substring(35, 5).Replace(" ", string.Empty);
-                                string jun = line.Substring(41, 5).Replace(" ", string.Empty);
-                                string jul = line.Substring(47, 5).Replace(" ", string.Empty);
-                                string aug = line.Substring(53, 5).Replace(" ", string.Empty);
-                                string sep = line.Substring(59, 5).Replace(" ", string.Empty);
-                                string oct = line.Substring(65, 5).Replace(" ", string.Empty);
-                                string nov = line.Substring(71, 5).Replace(" ", string.Empty);
-                                string dec = line.Substring(77, 5).Replace(" ", string.Empty);
-                                wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                ParseWrTable(line);
                             }
                         }
                     }
@@ -267,22 +327,7 @@ namespace Climat
                                 string line;
                                 while ((line = sr.ReadLine()) != null)
                                 {
-                                    int statid = Convert.ToInt32(line.Substring(0, 5));
-                                    string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
-                                    int year = Convert.ToInt32(line.Substring(6, 4));
-                                    string jan = line.Substring(11, 5).Replace(" ", string.Empty);
-                                    string feb = line.Substring(17, 5).Replace(" ", string.Empty);
-                                    string mar = line.Substring(23, 5).Replace(" ", string.Empty);
-                                    string apr = line.Substring(29, 5).Replace(" ", string.Empty);
-                                    string may = line.Substring(35, 5).Replace(" ", string.Empty);
-                                    string jun = line.Substring(41, 5).Replace(" ", string.Empty);
-                                    string jul = line.Substring(47, 5).Replace(" ", string.Empty);
-                                    string aug = line.Substring(53, 5).Replace(" ", string.Empty);
-                                    string sep = line.Substring(59, 5).Replace(" ", string.Empty);
-                                    string oct = line.Substring(65, 5).Replace(" ", string.Empty);
-                                    string nov = line.Substring(71, 5).Replace(" ", string.Empty);
-                                    string dec = line.Substring(77, 5).Replace(" ", string.Empty);
-                                    wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
+                                    ParseWrTable(line);
                                 }
                             }
                         }
@@ -299,18 +344,23 @@ namespace Climat
                 dataGridView1.Columns["StatId"].HeaderText = "Индекс ВМО";
                 dataGridView1.Columns["Name"].HeaderText = "Станция";
                 dataGridView1.Columns["Year"].HeaderText = "Год";
-                dataGridView1.Columns["Jan"].HeaderText = "Январь";
-                dataGridView1.Columns["Feb"].HeaderText = "Февраль";
-                dataGridView1.Columns["Mar"].HeaderText = "Март";
-                dataGridView1.Columns["Apr"].HeaderText = "Апрель";
-                dataGridView1.Columns["May"].HeaderText = "Май";
-                dataGridView1.Columns["Jun"].HeaderText = "Июнь";
-                dataGridView1.Columns["Jul"].HeaderText = "Июль";
-                dataGridView1.Columns["Aug"].HeaderText = "Август";
-                dataGridView1.Columns["Sep"].HeaderText = "Сентябрь";
-                dataGridView1.Columns["Oct"].HeaderText = "Октябрь";
-                dataGridView1.Columns["Nov"].HeaderText = "Ноябрь";
-                dataGridView1.Columns["Dec"].HeaderText = "Декабрь";
+                dataGridView1.Columns["Jan"].Visible = false;
+                dataGridView1.Columns["Feb"].Visible = false;
+                dataGridView1.Columns["Mar"].Visible = false;
+                dataGridView1.Columns["Apr"].Visible = false;
+                dataGridView1.Columns["May"].Visible = false;
+                dataGridView1.Columns["Jun"].Visible = false;
+                dataGridView1.Columns["Jul"].Visible = false;
+                dataGridView1.Columns["Aug"].Visible = false;
+                dataGridView1.Columns["Sep"].Visible = false;
+                dataGridView1.Columns["Oct"].Visible = false;
+                dataGridView1.Columns["Nov"].Visible = false;
+                dataGridView1.Columns["Dec"].Visible = false;
+                foreach (string month in GetMonthList())
+                {
+                    dataGridView1.Columns[month].HeaderText = MonthToString(month);
+                    dataGridView1.Columns[month].Visible = true;
+                }
                 dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
                 dataGridView1.Refresh();
@@ -322,45 +372,73 @@ namespace Climat
             }
         }
 
-        private List<float> GetArrayData()
+        private List<int> GetStatList()
         {
-            List<float> list = new List<float>();
-            List<string> months = new List<string>();
-            months.Add("Jan");
-            months.Add("Feb");
-            months.Add("Mar");
-            months.Add("Apr");
-            months.Add("May");
-            months.Add("Jun");
-            months.Add("Jul");
-            months.Add("Aug");
-            months.Add("Sep");
-            months.Add("Oct");
-            months.Add("Nov");
-            months.Add("Dec");
-            foreach (DataRow item in wrTable.Rows)
+            List<int> list = new List<int>();
+            foreach (DataRow item in statListTable.Rows)
             {
-                foreach (string month in months)
+                list.Add(item.Field<int>(statListTable.Columns["Id"]));
+            }
+            return list;
+        }
+
+        private string MonthToString(string month)
+        {
+            switch (month)
+            {
+                case "Jan": return "Январь";
+                case "Feb": return "Февраль";
+                case "Mar": return "Март";
+                case "Apr": return "Апрель";
+                case "May": return "Май";
+                case "Jun": return "Июнь";
+                case "Jul": return "Июль";
+                case "Aug": return "Август";
+                case "Sep": return "Сентябрь";
+                case "Oct": return "Октябрь";
+                case "Nov": return "Ноябрь";
+                case "Dec": return "Декабрь";
+                default: return "";
+            }
+        }
+
+        private string StringToMonth(string str)
+        {
+            switch (str)
+            {
+                case "Январь": return "Jan";
+                case "Февраль": return "Feb";
+                case "Март": return "Mar";
+                case "Апрель": return "Apr";
+                case "Май": return "May";
+                case "Июнь": return "Jun";
+                case "Июль": return "Jul";
+                case "Август": return "Aug";
+                case "Сентябрь": return "Sep";
+                case "Октябрь": return "Oct";
+                case "Ноябрь": return "Nov";
+                case "Декабрь": return "Dec";
+                default: return "";
+            }
+        }
+
+        private List<string> GetMonthList()
+        {
+            List<string> list = new List<string>();
+            foreach (DataRow item in fldTable.Rows)
+            {
+                string col_name = StringToMonth(item.Field<string>(fldTable.Columns["ColName"]));
+                if (!String.IsNullOrEmpty(col_name))
                 {
-                    string str = item.Field<string>(wrTable.Columns[month]);
-                    if (!String.IsNullOrEmpty(str))
-                    {
-                        float res;
-                        if (Single.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out res))
-                        {
-                            list.Add(res);
-                        }
-                    }
+                    list.Add(col_name);
                 }
             }
-            list.Sort();
             return list;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            
-            Form2 form2 = new Form2(GetArrayData());
+            Form2 form2 = new Form2(wrTable, GetStatList(), GetMonthList());
             form2.ShowDialog();
         }
     }
