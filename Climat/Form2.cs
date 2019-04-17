@@ -74,9 +74,15 @@ namespace Climat
 
             List<ClimatData> data = new List<ClimatData>();
 
-            richTextBox1.Text = "";
-
             foreach (int stat_id in stat_list) {
+                TabPage stat_tpage = new TabPage(StatIdToString(table, stat_id));
+
+                TabControl stat_tabcontrol = new TabControl();
+                stat_tabcontrol.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
+                stat_tabcontrol.Dock = DockStyle.Fill;
+
+                stat_tpage.Controls.Add(stat_tabcontrol);
+
                 foreach (string month in month_list) {
                     ClimatData item = new ClimatData(GetArrayData(table, stat_id, month));
 
@@ -90,42 +96,48 @@ namespace Climat
                     item = OutlierTest.FDistribution(item);
                     item = OutlierTest.Student(item);
 
-                    richTextBox1.Text += "======================================\n";
-                    richTextBox1.Text += "======================================\n";
-                    richTextBox1.Text += StatIdToString(table, stat_id) + " - " + MonthToString(month) + "\n\n";
-
-                    richTextBox1.Text += "Критерий Диксона:\n";
-
-                    richTextBox1.Text += "D1n = " + item.DixonN[0] + "\n";
-                    richTextBox1.Text += "D2n = " + item.DixonN[1] + "\n";
-                    richTextBox1.Text += "D3n = " + item.DixonN[2] + "\n";
-                    richTextBox1.Text += "D4n = " + item.DixonN[3] + "\n";
-                    richTextBox1.Text += "D5n = " + item.DixonN[4] + "\n";
-                    richTextBox1.Text += "D11 = " + item.Dixon1[0] + "\n";
-                    richTextBox1.Text += "D21 = " + item.Dixon1[1] + "\n";
-                    richTextBox1.Text += "D31 = " + item.Dixon1[2] + "\n";
-                    richTextBox1.Text += "D41 = " + item.Dixon1[3] + "\n";
-                    richTextBox1.Text += "D51 = " + item.Dixon1[4] + "\n\n";
-
-                    richTextBox1.Text += "Среднее значение = " + item.Y.Average() + "\n";
-                    richTextBox1.Text += "Дисперсия = " + item.Dispersion + "\n\n";
-
-                    richTextBox1.Text += "Критерий Смирнова-Граббса:\n";
-                    richTextBox1.Text += "Gn = " + item.GrubbsN + "\n";
-                    richTextBox1.Text += "G1 = " + item.Grubbs1 + "\n\n";
-                    richTextBox1.Text += "Асимметрия = " + item.Asymmetry + "\n";
-                    richTextBox1.Text += "Автокорреляция = " + item.Autocorrelation + "\n";
-                    richTextBox1.Text += "t-распределение = " + item.TDistribution + "\n\n";
-
-                    richTextBox1.Text += "Критерий Фишера = " + item.Fisher + "\n\n";
-
-                    richTextBox1.Text += "Степень свободы n1 = " + item.FDistribution1 + "\n";
-                    richTextBox1.Text += "Степень свободы n2 = " + item.FDistribution2 + "\n\n";
-
-                    richTextBox1.Text += "Критерий Стьюдента = " + item.Student + "\n\n";
-
                     data.Add(item);
+
+                    TabPage month_tpage = new TabPage(MonthToString(month));
+                    RichTextBox rtb = new RichTextBox();
+                    rtb.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
+                    rtb.Dock = DockStyle.Fill;
+
+                    rtb.Text = "Критерий Диксона:\n";
+
+                    rtb.Text += "D1n = " + item.DixonN[0] + "\n";
+                    rtb.Text += "D2n = " + item.DixonN[1] + "\n";
+                    rtb.Text += "D3n = " + item.DixonN[2] + "\n";
+                    rtb.Text += "D4n = " + item.DixonN[3] + "\n";
+                    rtb.Text += "D5n = " + item.DixonN[4] + "\n";
+                    rtb.Text += "D11 = " + item.Dixon1[0] + "\n";
+                    rtb.Text += "D21 = " + item.Dixon1[1] + "\n";
+                    rtb.Text += "D31 = " + item.Dixon1[2] + "\n";
+                    rtb.Text += "D41 = " + item.Dixon1[3] + "\n";
+                    rtb.Text += "D51 = " + item.Dixon1[4] + "\n\n";
+
+                    rtb.Text += "Среднее значение = " + item.Y.Average() + "\n";
+                    rtb.Text += "Дисперсия = " + item.Dispersion + "\n\n";
+
+                    rtb.Text += "Критерий Смирнова-Граббса:\n";
+                    rtb.Text += "Gn = " + item.GrubbsN + "\n";
+                    rtb.Text += "G1 = " + item.Grubbs1 + "\n\n";
+                    rtb.Text += "Асимметрия = " + item.Asymmetry + "\n";
+                    rtb.Text += "Автокорреляция = " + item.Autocorrelation + "\n";
+                    rtb.Text += "t-распределение = " + item.TDistribution + "\n\n";
+
+                    rtb.Text += "Критерий Фишера = " + item.Fisher + "\n\n";
+
+                    rtb.Text += "Степень свободы n1 = " + item.FDistribution1 + "\n";
+                    rtb.Text += "Степень свободы n2 = " + item.FDistribution2 + "\n\n";
+
+                    rtb.Text += "Критерий Стьюдента = " + item.Student + "\n\n";
+
+                    month_tpage.Controls.Add(rtb);
+
+                    stat_tabcontrol.TabPages.Add(month_tpage);
                 }
+                tabControl1.TabPages.Add(stat_tpage);
             }
         }
 
