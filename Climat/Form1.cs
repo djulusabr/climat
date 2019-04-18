@@ -361,7 +361,10 @@ namespace Climat
                     dataGridView1.Columns[month].HeaderText = MonthToString(month);
                     dataGridView1.Columns[month].Visible = true;
                 }
-                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+                dataGridView1.AutoResizeColumnHeadersHeight();
+                dataGridView1.AutoResizeColumns();
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridView1.Columns["Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
                 dataGridView1.Refresh();
                 button2.Enabled = true;

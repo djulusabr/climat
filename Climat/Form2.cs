@@ -91,12 +91,68 @@ namespace Climat
             return list;
         }
 
+        private void DixonGrubbsTable(DataTable table, SQLiteConnection Connect, ClimatData item, string table_name){
+            float significance = 0.0f;
+            string result = "";
+            SQLiteCommand Command = new SQLiteCommand();
+            Command.Connection = Connect;
+            Command.CommandText = @"SELECT CriticalValue FROM " + table_name + @"
+                                    ORDER BY ABS(Asymmetry - @asymmetry),
+                                                ABS(SignificanceLevel - @significance),
+		                                        ABS(Autocorrelation - @autocorrelation),
+		                                        ABS(SampleSize - @samplesize)
+                                    LIMIT 1";
+            Command.Parameters.AddWithValue("@asymmetry", item.Asymmetry);
+            Command.Parameters.AddWithValue("@significance", 5.0);
+            Command.Parameters.AddWithValue("@autocorrelation", item.Autocorrelation);
+            Command.Parameters.AddWithValue("@samplesize", item.Y.Count);
+            SQLiteDataReader sqlReader = Command.ExecuteReader();
+            float value = 0f, critval = 0f;
+            switch (table_name)
+            {
+                case "Dixon11": value = item.Dixon1[0]; break;
+                case "Dixon1N": value = item.DixonN[0]; break;
+                case "Dixon21": value = item.Dixon1[1]; break;
+                case "Dixon2N": value = item.DixonN[1]; break;
+                case "Dixon31": value = item.Dixon1[2]; break;
+                case "Dixon3N": value = item.DixonN[2]; break;
+                case "Dixon41": value = item.Dixon1[3]; break;
+                case "Dixon4N": value = item.DixonN[3]; break;
+                case "Dixon51": value = item.Dixon1[4]; break;
+                case "Dixon5N": value = item.DixonN[4]; break;
+                case "Grubbs1": value = item.Grubbs1; break;
+                case "GrubbsN": value = item.GrubbsN; break;
+
+            }
+
+            if (sqlReader.Read())
+                critval = sqlReader.GetFloat(sqlReader.GetOrdinal("CriticalValue"));
+            if (critval > value)
+                result = "Однороден";
+            else
+                result = "Неоднороден";
+
+            string maxmin = "";
+            string name = "";
+            if (table_name[table_name.Length - 1] == 'N')
+                maxmin = "max";
+            else if (table_name[table_name.Length - 1] == '1')
+                maxmin = "min";
+            if (table_name.Contains("Dixon"))
+                name = "Диксон " + table_name[table_name.Length - 2];
+            else if (table_name.Contains("Grubbs"))
+                name = "Смирнов-Граббс";
+
+            table.Rows.Add(new object[] { null, maxmin, name, value, critval, significance, result
+        });
+        }
+
         public Form2(DataTable table, List<int> stat_list, List<string> month_list)
         {
             InitializeComponent();
 
             List<ClimatData> data = new List<ClimatData>();
-            using (SQLiteConnection Connect = new SQLiteConnection(@"ClimatTables.db"))
+            using (SQLiteConnection Connect = new SQLiteConnection(@"Data Source=ClimatTables.db"))
             {
                 Connect.Open();
                 foreach (int stat_id in stat_list)
@@ -177,6 +233,9 @@ namespace Climat
                             DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
                             IdColumn.Unique = true;
                             IdColumn.AllowDBNull = false;
+                            IdColumn.AutoIncrement = true;
+                            IdColumn.AutoIncrementSeed = 1;
+                            IdColumn.AutoIncrementStep = 1;
 
                             DataColumn AvailabilityColumn = new DataColumn("Availability", Type.GetType("System.Single"));
                             DataColumn ValueColumn = new DataColumn("Value", Type.GetType("System.Single"));
@@ -197,7 +256,8 @@ namespace Climat
                             float availability = ((i + 1) / (list2.Count + 1)) * 100; 
                             table2.Rows.Add(new object[] { null, availability, list2[i], list2b[i] });
                         }
-
+                        
+                        grid2.DataBindingComplete += new DataGridViewBindingCompleteEventHandler(grid2_DataBindingComplete);
                         grid2.DataSource = table2;
 
                         sub_tpage2.Controls.Add(grid2);
@@ -213,6 +273,9 @@ namespace Climat
                             DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
                             IdColumn.Unique = true;
                             IdColumn.AllowDBNull = false;
+                            IdColumn.AutoIncrement = true;
+                            IdColumn.AutoIncrementSeed = 1;
+                            IdColumn.AutoIncrementStep = 1;
 
                             DataColumn ExtremumColumn = new DataColumn("Extremum", Type.GetType("System.String"));
                             DataColumn CriteriaColumn = new DataColumn("Criteria", Type.GetType("System.String"));
@@ -230,33 +293,20 @@ namespace Climat
                             table3.Columns.Add(ResultColumn);
                             table3.PrimaryKey = new DataColumn[] { table3.Columns["Id"] };
                         }
-                        {
-                            float significance = 0.0f;
-                            string result = "";
-                            SQLiteCommand Command = new SQLiteCommand
-                            {
-                                Connection = Connect,
-                                CommandText = @"SELECT * FROM Dixon1N
-                                                ORDER BY ABS(Asymmetry - @param1),
-                                                         ABS(SignificanceLevel - @param2),
-		                                                 ABS(Autocorrelation - @param3),
-		                                                 ABS(SampleSize - @param4)
-                                                LIMIT 1"
-                            };
-                            Command.Parameters.Add(new SQLiteParameter("@param1", item.Asymmetry));
-                            Command.Parameters.Add(new SQLiteParameter("@param2", 5.0));
-                            Command.Parameters.Add(new SQLiteParameter("@param3", item.Autocorrelation));
-                            Command.Parameters.Add(new SQLiteParameter("@param4", item.Y.Count));
-                            SQLiteDataReader sqlReader = Command.ExecuteReader();
-                            float critval = sqlReader.GetFloat(0);
-                            if (critval > item.DixonN[0])
-                                result = "Однороден";
-                            else
-                                result = "Неоднороден";
-
-                            table3.Rows.Add(new object[] { null, "max", "Диксон 1", item.DixonN[0], critval, significance, result });
-                        }
-
+                        DixonGrubbsTable(table3, Connect, item, "Dixon1N");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon2N");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon3N");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon4N");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon5N");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon11");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon21");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon31");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon41");
+                        DixonGrubbsTable(table3, Connect, item, "Dixon51");
+                        DixonGrubbsTable(table3, Connect, item, "GrubbsN");
+                        DixonGrubbsTable(table3, Connect, item, "Grubbs1");
+                        
+                        grid3.DataBindingComplete += new DataGridViewBindingCompleteEventHandler(grid3_DataBindingComplete);
                         grid3.DataSource = table3;
 
                         sub_tpage3.Controls.Add(grid3);
@@ -268,6 +318,34 @@ namespace Climat
                 }
             }
         }
+
+        private void grid2_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            ((DataGridView)sender).Columns["Id"].Visible = false;
+            ((DataGridView)sender).Columns["Availability"].HeaderText = "Обеспеченность, P%";
+            ((DataGridView)sender).Columns["Value"].HeaderText = "Значение ранжированных осадков, мм";
+            ((DataGridView)sender).Columns["Year"].HeaderText = "Год";
+            ((DataGridView)sender).AutoResizeColumnHeadersHeight();
+            ((DataGridView)sender).AutoResizeColumns();
+            ((DataGridView)sender).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        private void grid3_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            ((DataGridView)sender).Columns["Id"].Visible = false;
+            ((DataGridView)sender).Columns["Extremum"].HeaderText = "Экстремум";
+            ((DataGridView)sender).Columns["Criteria"].HeaderText = "Критерий";
+            ((DataGridView)sender).Columns["Calculated"].HeaderText = "Расчетное значение";
+            ((DataGridView)sender).Columns["Critical"].HeaderText = "Критическое значение";
+            ((DataGridView)sender).Columns["Significance"].HeaderText = "Уровень значимости расчетный";
+            ((DataGridView)sender).Columns["Result"].HeaderText = "Вывод";
+            ((DataGridView)sender).AutoResizeColumnHeadersHeight();
+            ((DataGridView)sender).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+            ((DataGridView)sender).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            ((DataGridView)sender).Columns["Criteria"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            ((DataGridView)sender).Columns["Result"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+        }
+
 
         private void button1_Click(object sender, EventArgs e)
         {
