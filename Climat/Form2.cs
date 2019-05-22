@@ -66,6 +66,7 @@ namespace Climat
                 }
             }
             list.Sort();
+            list.Reverse();
             return list;
         }
 
@@ -92,7 +93,7 @@ namespace Climat
         }
 
         private void DixonGrubbsTable(DataTable table, SQLiteConnection Connect, ClimatData item, string table_name){
-            float significance = 0.0f;
+            float significance = 5.0f;
             string result = "";
             SQLiteCommand Command = new SQLiteCommand();
             Command.Connection = Connect;
@@ -168,7 +169,7 @@ namespace Climat
                         ClimatData item = new ClimatData(GetArrayData(table, stat_id, month));
 
                         item = OutlierTest.Dixon(item);
-                        item = OutlierTest.Dispersion(item);
+                        item = OutlierTest.Deviation(item);
                         item = OutlierTest.Grubbs(item);
                         item = OutlierTest.Asymmetry(item);
                         item = OutlierTest.Autocorrelation(item);
@@ -204,7 +205,7 @@ namespace Climat
                         rtb.Text += "D51 = " + item.Dixon1[4] + "\n\n";
 
                         rtb.Text += "Среднее значение = " + item.Y.Average() + "\n";
-                        rtb.Text += "Дисперсия = " + item.Dispersion + "\n\n";
+                        rtb.Text += "Дисперсия = " + item.Deviation + "\n\n";
 
                         rtb.Text += "Критерий Смирнова-Граббса:\n";
                         rtb.Text += "Gn = " + item.GrubbsN + "\n";
@@ -312,8 +313,143 @@ namespace Climat
                         sub_tpage3.Controls.Add(grid3);
                         month_tcontrol.TabPages.Add(sub_tpage3);
 
+                        TabPage sub_tpage4 = new TabPage("Критерии Фишера и Стьюдента");
+                        DataGridView grid4 = new DataGridView();
+                        grid4.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
+                        grid4.Dock = DockStyle.Fill;
+
+                        DataTable table4 = new DataTable();
+                        {
+                            {
+                                DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
+                                IdColumn.Unique = true;
+                                IdColumn.AllowDBNull = false;
+                                IdColumn.AutoIncrement = true;
+                                IdColumn.AutoIncrementSeed = 1;
+                                IdColumn.AutoIncrementStep = 1;
+                                
+                                DataColumn CriteriaColumn = new DataColumn("Criteria", Type.GetType("System.String"));
+                                DataColumn CalculatedColumn = new DataColumn("Calculated", Type.GetType("System.Single"));
+                                DataColumn CriticalColumn = new DataColumn("Critical", Type.GetType("System.Single"));
+                                DataColumn SignificanceColumn = new DataColumn("Significance", Type.GetType("System.Single"));
+                                DataColumn ResultColumn = new DataColumn("Result", Type.GetType("System.String"));
+
+                                table4.Columns.Add(IdColumn);
+                                table4.Columns.Add(CriteriaColumn);
+                                table4.Columns.Add(CalculatedColumn);
+                                table4.Columns.Add(CriticalColumn);
+                                table4.Columns.Add(SignificanceColumn);
+                                table4.Columns.Add(ResultColumn);
+                                table4.PrimaryKey = new DataColumn[] { table4.Columns["Id"] };
+                            }
+                        }
+
+                        {
+                            float significance = 5.0f;
+                            string result = "";
+                            SQLiteCommand Command = new SQLiteCommand();
+                            Command.Connection = Connect;
+                            Command.CommandText = @"SELECT CriticalValue FROM Fisher1
+                                                    ORDER BY ABS(SampleSize - @samplesize),
+                                                             ABS(SignificanceLevel - @significance),
+		                                                     ABS(Correlation - @correlation),
+		                                                     ABS(Autocorrelation - @autocorrelation)
+                                                    LIMIT 1";
+                            Command.Parameters.AddWithValue("@samplesize", item.Y1.Count);
+                            Command.Parameters.AddWithValue("@significance", 5.0);
+                            Command.Parameters.AddWithValue("@correlation", 0.0);
+                            Command.Parameters.AddWithValue("@autocorrelation", item.Autocorrelation);
+                            SQLiteDataReader sqlReader = Command.ExecuteReader();
+                            float critval = 0f;
+
+                            if (sqlReader.Read())
+                                critval = sqlReader.GetFloat(sqlReader.GetOrdinal("CriticalValue"));
+                            if (critval > item.Fisher)
+                                result = "Однороден";
+                            else
+                                result = "Неоднороден";
+
+                            table4.Rows.Add(new object[] { null, "Критерий Фишера", item.Fisher, critval, significance, result });
+                        }
+
+                        {
+                            float significance = 5.0f;
+                            string result = "";
+                            SQLiteCommand Command = new SQLiteCommand();
+                            Command.Connection = Connect;
+                            Command.CommandText = @"SELECT CriticalValue FROM Student1
+                                                    ORDER BY ABS(SampleSize - @samplesize),
+                                                             ABS(SignificanceLevel - @significance),
+		                                                     ABS(Correlation - @correlation),
+		                                                     ABS(Autocorrelation - @autocorrelation)
+                                                    LIMIT 1";
+                            Command.Parameters.AddWithValue("@samplesize", item.Y1.Count);
+                            Command.Parameters.AddWithValue("@significance", 5.0);
+                            Command.Parameters.AddWithValue("@correlation", 0.0);
+                            Command.Parameters.AddWithValue("@autocorrelation", item.Autocorrelation);
+                            SQLiteDataReader sqlReader = Command.ExecuteReader();
+                            float critval = 0f;
+
+                            if (sqlReader.Read())
+                                critval = sqlReader.GetFloat(sqlReader.GetOrdinal("CriticalValue"));
+                            if (critval > item.Student)
+                                result = "Однороден";
+                            else
+                                result = "Неоднороден";
+
+                            table4.Rows.Add(new object[] { null, "Критерий Стьюдента", item.Student, critval, significance, result });
+                        }
+
+                        grid4.DataBindingComplete += new DataGridViewBindingCompleteEventHandler(grid4_DataBindingComplete);
+                        grid4.DataSource = table4;
+
+                        sub_tpage4.Controls.Add(grid4);
+                        month_tcontrol.TabPages.Add(sub_tpage4);
+
                         stat_tcontrol.TabPages.Add(month_tpage);
                     }
+
+                    TabPage sub_tpage5 = new TabPage("Критерии Фишера и Стьюдента");
+                    DataGridView grid5 = new DataGridView();
+                    grid5.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
+                    grid5.Dock = DockStyle.Fill;
+
+                    DataTable table5 = new DataTable();
+                    {
+                        {
+                            DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
+                            IdColumn.Unique = true;
+                            IdColumn.AllowDBNull = false;
+                            IdColumn.AutoIncrement = true;
+                            IdColumn.AutoIncrementSeed = 1;
+                            IdColumn.AutoIncrementStep = 1;
+
+                            DataColumn CriteriaColumn = new DataColumn("Criteria", Type.GetType("System.String"));
+                            DataColumn CalculatedColumn = new DataColumn("Calculated", Type.GetType("System.Single"));
+                            DataColumn CriticalColumn = new DataColumn("Critical", Type.GetType("System.Single"));
+                            DataColumn SignificanceColumn = new DataColumn("Significance", Type.GetType("System.Single"));
+                            DataColumn ResultColumn = new DataColumn("Result", Type.GetType("System.String"));
+
+                            table5.Columns.Add(IdColumn);
+                            table5.Columns.Add(CriteriaColumn);
+                            table5.Columns.Add(CalculatedColumn);
+                            table5.Columns.Add(CriticalColumn);
+                            table5.Columns.Add(SignificanceColumn);
+                            table5.Columns.Add(ResultColumn);
+                            table5.PrimaryKey = new DataColumn[] { table5.Columns["Id"] };
+                        }
+                    }
+
+                    {
+                        
+                    }
+
+                    grid5.DataBindingComplete += new DataGridViewBindingCompleteEventHandler(grid4_DataBindingComplete);
+                    grid5.DataSource = table5;
+
+                    sub_tpage5.Controls.Add(grid5);
+                    stat_tcontrol.TabPages.Add(sub_tpage5);
+
                     tabControl1.TabPages.Add(stat_tpage);
                 }
             }
@@ -334,6 +470,21 @@ namespace Climat
         {
             ((DataGridView)sender).Columns["Id"].Visible = false;
             ((DataGridView)sender).Columns["Extremum"].HeaderText = "Экстремум";
+            ((DataGridView)sender).Columns["Criteria"].HeaderText = "Критерий";
+            ((DataGridView)sender).Columns["Calculated"].HeaderText = "Расчетное значение";
+            ((DataGridView)sender).Columns["Critical"].HeaderText = "Критическое значение";
+            ((DataGridView)sender).Columns["Significance"].HeaderText = "Уровень значимости расчетный";
+            ((DataGridView)sender).Columns["Result"].HeaderText = "Вывод";
+            ((DataGridView)sender).AutoResizeColumnHeadersHeight();
+            ((DataGridView)sender).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+            ((DataGridView)sender).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            ((DataGridView)sender).Columns["Criteria"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            ((DataGridView)sender).Columns["Result"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+        }
+
+        private void grid4_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            ((DataGridView)sender).Columns["Id"].Visible = false;
             ((DataGridView)sender).Columns["Criteria"].HeaderText = "Критерий";
             ((DataGridView)sender).Columns["Calculated"].HeaderText = "Расчетное значение";
             ((DataGridView)sender).Columns["Critical"].HeaderText = "Критическое значение";

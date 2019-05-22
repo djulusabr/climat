@@ -12,8 +12,8 @@ namespace ClimatLibrary
     public class ClimatData
     {
         public List<float> Y, Y1, Y2, DixonN, Dixon1;
-        public float GrubbsN, Grubbs1, Dispersion, Asymmetry, Autocorrelation,
-                     TDistribution, Fisher, FDistribution1, FDistribution2, Dispersion1, Dispersion2,
+        public float GrubbsN, Grubbs1, Variance, Deviation, Asymmetry, Autocorrelation,
+                     TDistribution, Fisher, FDistribution1, FDistribution2, Variance1, Variance2, Deviation1, Deviation2,
                      Student;
 
         public ClimatData(List<float> _Y)
@@ -48,38 +48,43 @@ namespace ClimatLibrary
 
             return data;
         }
-        public static ClimatData Dispersion(ClimatData data)
+        public static ClimatData Deviation(ClimatData data)
         {
             int n = data.Y.Count;
 
-            data.Dispersion = 0;
+            data.Variance = 0;
 
             for (int i = 0; i < n; i++)
             {
-                data.Dispersion += (float)Math.Pow(data.Y[0] - data.Y.Average(), 2);
+                data.Variance += (float)Math.Pow(data.Y[i] - data.Y.Average(), 2);
             }
 
-            data.Dispersion /= n - 1;
+            data.Variance /= n - 1;
+
+            data.Deviation = (float)Math.Sqrt(data.Variance);
 
             int n1 = data.Y1.Count;
             int n2 = data.Y2.Count;
 
-            data.Dispersion1 = 0;
-            data.Dispersion2 = 0;
+            data.Variance1 = 0;
+            data.Variance2 = 0;
 
             for (int i = 0; i < n1; i++)
             {
-                data.Dispersion1 += (float)Math.Pow(data.Y1[0] - data.Y1.Average(), 2);
+                data.Variance1 += (float)Math.Pow(data.Y1[i] - data.Y1.Average(), 2);
             }
 
-            data.Dispersion1 /= n1 - 2;
+            data.Variance1 /= n1 - 1;
 
             for (int i = 0; i < n2; i++)
             {
-                data.Dispersion2 += (float)Math.Pow(data.Y2[0] - data.Y2.Average(), 2);
+                data.Variance2 += (float)Math.Pow(data.Y2[i] - data.Y2.Average(), 2);
             }
 
-            data.Dispersion2 /= n2 - 2;
+            data.Variance2 /= n2 - 1;
+
+            data.Deviation1 = (float)Math.Sqrt(data.Variance1);
+            data.Deviation2 = (float)Math.Sqrt(data.Variance2);
 
             return data;
         }
@@ -88,8 +93,8 @@ namespace ClimatLibrary
         {
             int n = data.Y.Count - 1;
 
-            data.GrubbsN = (data.Y[n] - data.Y.Average()) / (float)Math.Sqrt(data.Dispersion);
-            data.Grubbs1 = (data.Y.Average() - data.Y[0]) / (float)Math.Sqrt(data.Dispersion);
+            data.GrubbsN = (data.Y[n] - data.Y.Average()) / data.Deviation;
+            data.Grubbs1 = (data.Y.Average() - data.Y[0]) / data.Deviation;
 
             return data;
         }
@@ -102,15 +107,15 @@ namespace ClimatLibrary
                     
             for (int i = 0; i < n; i++)
             {
-                data.Asymmetry += (float)Math.Pow((data.Y[i] / data.Y.Average()) - 1, 3);
-                //data.Asymmetry += (float)Math.Pow(data.Y[i] - data.Y.Average(), 3);
+                //data.Asymmetry += (float)Math.Pow((data.Y[i] / data.Y.Average()) - 1, 3);
+                data.Asymmetry += (float)Math.Pow(data.Y[i] - data.Y.Average(), 3);
             }
 
-            //data.Asymmetry /= n * (float)Math.Pow((float)Math.Sqrt(data.Dispersion), 3);
+            data.Asymmetry /= n * (float)Math.Pow(data.Deviation, 3);
 
-            data.Asymmetry *= n;
+            //data.Asymmetry *= n;
 
-            data.Asymmetry /= (float)Math.Pow((float)Math.Sqrt(data.Dispersion) / data.Y.Average(), 3) * (n - 1) * (n - 2);
+            //data.Asymmetry /= (float)Math.Pow(data.Deviation / data.Y.Average(), 3) * (n - 1) * (n - 2);
 
             return data;
         }
@@ -123,20 +128,31 @@ namespace ClimatLibrary
 
             for (int i = 0; i < n - 1; i++)
             {
-                Y_Average1 += data.Y[i + 1] / (n - 1);
-                Y_Average2 += data.Y[i] / (n - 1);
+                Y_Average1 += data.Y[i] / (n - 1);
+                Y_Average2 += data.Y[i + 1] / (n - 1);
             }
 
-            float A = 0, B = 0, C = 0;
+            float Deviation1 = 0, Deviation2 = 0;
 
             for (int i = 0; i < n - 1; i++)
             {
-                A += (data.Y[i] - Y_Average1) * (data.Y[i + 1] - Y_Average2);
-                B += (float)Math.Pow(data.Y[i] - Y_Average1, 2);
-                C += (float)Math.Pow(data.Y[i + 1] - Y_Average2, 2);
+                Deviation1 += (float)Math.Pow(data.Y[i] - data.Y.Average(), 2);
+                Deviation2 += (float)Math.Pow(data.Y[i + 1] - data.Y.Average(), 2);
             }
 
-            data.Autocorrelation = A / (float)Math.Sqrt(B * C);
+            Deviation1 /= n - 2;
+            Deviation2 /= n - 2;
+            Deviation1 = (float)Math.Sqrt(Deviation1);
+            Deviation2 = (float)Math.Sqrt(Deviation2);
+
+            data.Autocorrelation = 0;
+
+            for (int i = 0; i < n - 1; i++)
+            {
+                data.Autocorrelation += (data.Y[i] - Y_Average1) * (data.Y[i + 1] - Y_Average2);
+            }
+
+            data.Autocorrelation /= n * Deviation1 * Deviation2;
 
             return data;
         }
@@ -152,7 +168,7 @@ namespace ClimatLibrary
 
         public static ClimatData Fisher(ClimatData data)
         {
-            data.Fisher = data.Dispersion1 / data.Dispersion2;
+            data.Fisher = data.Variance1 / data.Variance2;
 
             return data;
         }
@@ -183,15 +199,10 @@ namespace ClimatLibrary
             int n1 = data.Y1.Count;
             int n2 = data.Y2.Count;
 
-            data.Student = (data.Y1.Average() - data.Y2.Average()) / (float)Math.Sqrt(n1 * data.Dispersion1 + n2 * data.Dispersion2)
+            data.Student = (data.Y1.Average() - data.Y2.Average()) / (float)Math.Sqrt(n1 * data.Variance1 + n2 * data.Variance2)
                          * (float)Math.Sqrt((n1 * n2 * (n1 + n2 - 2)) / (n1 + n2));
 
             return data;
-
-            // TODO:
-            // 1) Вывод как в конце методички, таблицами
-            // 2) Вывод в эксель
-            // а) Мб сделать чтобы несколько файлов можно было выбрать
         }
 
         private static readonly ReadOnlyCollection<float> Table2_C =
