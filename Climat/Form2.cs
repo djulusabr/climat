@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 using ClimatLibrary;
 
 namespace Climat
@@ -148,10 +149,18 @@ namespace Climat
         });
         }
 
-        public Form2(DataTable table, List<int> stat_list, List<string> month_list)
+        private DataTable table;
+        private List<int> stat_list;
+        private List<string> month_list;
+        private string path;
+
+        public Form2(DataTable table, List<int> stat_list, List<string> month_list, string path)
         {
             InitializeComponent();
-
+            this.table = table;
+            this.stat_list = stat_list;
+            this.month_list = month_list;
+            this.path = path;
             List<ClimatData> data = new List<ClimatData>();
             using (SQLiteConnection Connect = new SQLiteConnection(@"Data Source=ClimatTables.db"))
             {
@@ -186,43 +195,43 @@ namespace Climat
                         month_tcontrol.Dock = DockStyle.Fill;
                         month_tpage.Controls.Add(month_tcontrol);
 
-                        TabPage sub_tpage1 = new TabPage("Вычисления");
-                        RichTextBox rtb = new RichTextBox();
-                        rtb.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
-                        rtb.Dock = DockStyle.Fill;
+                        //TabPage sub_tpage1 = new TabPage("Вычисления");
+                        //RichTextBox rtb = new RichTextBox();
+                        //rtb.Anchor = (AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Left);
+                        //rtb.Dock = DockStyle.Fill;
 
-                        rtb.Text = "Критерий Диксона:\n";
+                        //rtb.Text = "Критерий Диксона:\n";
 
-                        rtb.Text += "D1n = " + item.DixonN[0] + "\n";
-                        rtb.Text += "D2n = " + item.DixonN[1] + "\n";
-                        rtb.Text += "D3n = " + item.DixonN[2] + "\n";
-                        rtb.Text += "D4n = " + item.DixonN[3] + "\n";
-                        rtb.Text += "D5n = " + item.DixonN[4] + "\n";
-                        rtb.Text += "D11 = " + item.Dixon1[0] + "\n";
-                        rtb.Text += "D21 = " + item.Dixon1[1] + "\n";
-                        rtb.Text += "D31 = " + item.Dixon1[2] + "\n";
-                        rtb.Text += "D41 = " + item.Dixon1[3] + "\n";
-                        rtb.Text += "D51 = " + item.Dixon1[4] + "\n\n";
+                        //rtb.Text += "D1n = " + item.DixonN[0] + "\n";
+                        //rtb.Text += "D2n = " + item.DixonN[1] + "\n";
+                        //rtb.Text += "D3n = " + item.DixonN[2] + "\n";
+                        //rtb.Text += "D4n = " + item.DixonN[3] + "\n";
+                        //rtb.Text += "D5n = " + item.DixonN[4] + "\n";
+                        //rtb.Text += "D11 = " + item.Dixon1[0] + "\n";
+                        //rtb.Text += "D21 = " + item.Dixon1[1] + "\n";
+                        //rtb.Text += "D31 = " + item.Dixon1[2] + "\n";
+                        //rtb.Text += "D41 = " + item.Dixon1[3] + "\n";
+                        //rtb.Text += "D51 = " + item.Dixon1[4] + "\n\n";
 
-                        rtb.Text += "Среднее значение = " + item.Y.Average() + "\n";
-                        rtb.Text += "Дисперсия = " + item.Deviation + "\n\n";
+                        //rtb.Text += "Среднее значение = " + item.Y.Average() + "\n";
+                        //rtb.Text += "Дисперсия = " + item.Deviation + "\n\n";
 
-                        rtb.Text += "Критерий Смирнова-Граббса:\n";
-                        rtb.Text += "Gn = " + item.GrubbsN + "\n";
-                        rtb.Text += "G1 = " + item.Grubbs1 + "\n\n";
-                        rtb.Text += "Асимметрия = " + item.Asymmetry + "\n";
-                        rtb.Text += "Автокорреляция = " + item.Autocorrelation + "\n";
-                        rtb.Text += "t-распределение = " + item.TDistribution + "\n\n";
+                        //rtb.Text += "Критерий Смирнова-Граббса:\n";
+                        //rtb.Text += "Gn = " + item.GrubbsN + "\n";
+                        //rtb.Text += "G1 = " + item.Grubbs1 + "\n\n";
+                        //rtb.Text += "Асимметрия = " + item.Asymmetry + "\n";
+                        //rtb.Text += "Автокорреляция = " + item.Autocorrelation + "\n";
+                        //rtb.Text += "t-распределение = " + item.TDistribution + "\n\n";
 
-                        rtb.Text += "Критерий Фишера = " + item.Fisher + "\n\n";
+                        //rtb.Text += "Критерий Фишера = " + item.Fisher + "\n\n";
 
-                        rtb.Text += "Степень свободы n1 = " + item.FDistribution1 + "\n";
-                        rtb.Text += "Степень свободы n2 = " + item.FDistribution2 + "\n\n";
+                        //rtb.Text += "Степень свободы n1 = " + item.FDistribution1 + "\n";
+                        //rtb.Text += "Степень свободы n2 = " + item.FDistribution2 + "\n\n";
 
-                        rtb.Text += "Критерий Стьюдента = " + item.Student + "\n\n";
+                        //rtb.Text += "Критерий Стьюдента = " + item.Student + "\n\n";
 
-                        sub_tpage1.Controls.Add(rtb);
-                        month_tcontrol.TabPages.Add(sub_tpage1);
+                        //sub_tpage1.Controls.Add(rtb);
+                        //month_tcontrol.TabPages.Add(sub_tpage1);
 
                         TabPage sub_tpage2 = new TabPage("Ранжированный ряд");
                         DataGridView grid2 = new DataGridView();
@@ -501,6 +510,91 @@ namespace Climat
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Excel.Application excelApp = new Excel.Application();
+            foreach (TabPage stat_tabPage in tabControl1.TabPages)
+            {
+                // Станция
+                Excel.Workbook workBook = excelApp.Workbooks.Add();
+                foreach (TabControl stat_tabControl in stat_tabPage.Controls)
+                {
+                    for (int i = 0; i < stat_tabControl.TabPages.Count; i++)
+                    {
+                        // Месяц
+                        TabPage month_tabPage = stat_tabControl.TabPages[i];
+                        Excel.Sheets sheets = workBook.Sheets;
+                        Excel.Worksheet workSheet;
+                        if (i == 0)
+                        {
+                            workSheet = (Excel.Worksheet)workBook.Worksheets.get_Item(1);
+                        }
+                        else
+                        {
+                            workSheet = (Excel.Worksheet)sheets.Add(sheets[sheets.Count], Type.Missing, Type.Missing, Type.Missing);
+                        }
+                        workSheet.Name = month_tabPage.Text;
+                        foreach (Control month_control in month_tabPage.Controls)
+                        {
+                            if (month_control is TabControl month_tabControl)
+                            {
+                                // Критерий
+                                workSheet.Cells[1, 1] = "Ранжированный ряд";
+                                workSheet.Cells[1, 6] = "Критерии Диксона и Смирнова-Граббса";
+                                workSheet.Cells[15, 6] = "Критерии Фишера и Стьюдента";
+                                foreach (TabPage data_tabPage in month_tabControl.TabPages)
+                                {
+                                    foreach (Control data_control in data_tabPage.Controls)
+                                    {
+                                        if (data_control is DataGridView data_gridView)
+                                        {
+                                            // Месячный датагридвью
+                                            DataTable dataTable = (DataTable)data_gridView.DataSource;
+                                            for (int x = 0; x < dataTable.Rows.Count; x++)
+                                            {
+                                                DataRow dataRow = dataTable.Rows[x];
+                                                if (data_tabPage.Text == "Ранжированный ряд")
+                                                {
+                                                    workSheet.Cells[x + 2, 1] = dataRow["Availability"].ToString();
+                                                    workSheet.Cells[x + 2, 2] = dataRow["Value"].ToString();
+                                                    workSheet.Cells[x + 2, 3] = dataRow["Year"].ToString();
+                                                }
+                                                else if (data_tabPage.Text == "Критерии Диксона и Смирнова-Граббса")
+                                                {
+                                                    workSheet.Cells[x + 2,  5] = dataRow["Extremum"].ToString();
+                                                    workSheet.Cells[x + 2,  6] = dataRow["Criteria"].ToString();
+                                                    workSheet.Cells[x + 2,  7] = dataRow["Calculated"].ToString();
+                                                    workSheet.Cells[x + 2,  8] = dataRow["Critical"].ToString();
+                                                    workSheet.Cells[x + 2,  9] = dataRow["Significance"].ToString();
+                                                    workSheet.Cells[x + 2, 10] = dataRow["Result"].ToString();
+                                                }
+                                                else if (data_tabPage.Text == "Критерии Фишера и Стьюдента")
+                                                {
+                                                    workSheet.Cells[x + 16,  6] = dataRow["Criteria"].ToString();
+                                                    workSheet.Cells[x + 16,  7] = dataRow["Calculated"].ToString();
+                                                    workSheet.Cells[x + 16,  8] = dataRow["Critical"].ToString();
+                                                    workSheet.Cells[x + 16,  9] = dataRow["Significance"].ToString();
+                                                    workSheet.Cells[x + 16, 10] = dataRow["Result"].ToString();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (month_control is DataGridView month_gridView)
+                            {
+                                // Результативный датагридвью
+                                // тут нечего писать пока
+                            }
+                        }
+                    }
+                }
+                workBook.SaveAs(path + "\\" + stat_tabPage.Text + ".xlsx", Excel.XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing, true, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlLocalSessionChanges, Type.Missing, Type.Missing);
+                workBook.Close();
+            }
+            excelApp.Quit();
         }
     }
 }

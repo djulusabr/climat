@@ -239,6 +239,8 @@ namespace Climat
             wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
         }
 
+        private string final_path;
+
         private void ReadFromDirectory(string path)
         {
             var fileList = Directory.GetFiles(path, "*.txt");
@@ -368,6 +370,7 @@ namespace Climat
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
                 dataGridView1.Refresh();
                 button2.Enabled = true;
+                this.final_path = path;
             }
             else
             {
@@ -441,7 +444,7 @@ namespace Climat
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Form2 form2 = new Form2(wrTable, GetStatList(), GetMonthList());
+            Form2 form2 = new Form2(wrTable, GetStatList(), GetMonthList(), final_path);
             form2.ShowDialog();
         }
     }
