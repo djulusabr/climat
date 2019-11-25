@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Climat
 {
@@ -16,8 +17,8 @@ namespace Climat
         [DllImport("user32.dll")]
         private static extern int SendMessage(IntPtr hWnd, Int32 wMsg, bool wParam, Int32 lParam);
         private const int WM_SETREDRAW = 11;
-        DataSet climatSet;
-        DataTable statListTable, fldTable, wrTable;
+        public static DataSet climatSet;
+        public static DataTable statListTable, fldTable, wrTable;
         public Form1()
         {
             InitializeComponent();
@@ -30,79 +31,39 @@ namespace Climat
             climatSet.Tables.Add(wrTable);
 
             {
-                DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
+                DataColumn IdColumn = new DataColumn("ID", Type.GetType("System.Int32"));
                 IdColumn.Unique = true;
                 IdColumn.AllowDBNull = false;
-
-                DataColumn NameColumn = new DataColumn("Name", Type.GetType("System.String"));
 
                 statListTable.Columns.Add(IdColumn);
-                statListTable.Columns.Add(NameColumn);
-                statListTable.PrimaryKey = new DataColumn[] { statListTable.Columns["Id"] };
+                statListTable.Columns.Add(new DataColumn("Название станции", Type.GetType("System.String")));
+                statListTable.PrimaryKey = new DataColumn[] { statListTable.Columns["ID"] };
             }
 
             {
-                DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
+                DataColumn IdColumn = new DataColumn("ID", Type.GetType("System.Int32"));
                 IdColumn.Unique = true;
-                IdColumn.AllowDBNull = false;
-
-                DataColumn ColNumColumn = new DataColumn("ColNum", Type.GetType("System.Int32"));
-
-                DataColumn FormattingColumn = new DataColumn("Formatting", Type.GetType("System.String"));
-
-                DataColumn ColNameColumn = new DataColumn("ColName", Type.GetType("System.String"));
+                IdColumn.AllowDBNull = false; 
 
                 fldTable.Columns.Add(IdColumn);
-                fldTable.Columns.Add(ColNumColumn);
-                fldTable.Columns.Add(FormattingColumn);
-                fldTable.Columns.Add(ColNameColumn);
-                fldTable.PrimaryKey = new DataColumn[] { fldTable.Columns["Id"] };
+                fldTable.Columns.Add(new DataColumn("N", Type.GetType("System.Int32")));
+                fldTable.Columns.Add(new DataColumn("Формат", Type.GetType("System.String")));
+                fldTable.Columns.Add(new DataColumn("Название столбца", Type.GetType("System.String")));
+                fldTable.PrimaryKey = new DataColumn[] { fldTable.Columns["ID"] };
             }
 
             {
-                DataColumn IdColumn = new DataColumn("Id", Type.GetType("System.Int32"));
+                DataColumn IdColumn = new DataColumn("ID", Type.GetType("System.Int32"));
                 IdColumn.Unique = true;
                 IdColumn.AllowDBNull = false;
                 IdColumn.AutoIncrement = true;
                 IdColumn.AutoIncrementSeed = 1;
                 IdColumn.AutoIncrementStep = 1;
 
-                DataColumn StatIdColumn = new DataColumn("StatId", Type.GetType("System.Int32"));
-
-                DataColumn NameColumn = new DataColumn("Name", Type.GetType("System.String"));
-
-                DataColumn YearColumn = new DataColumn("Year", Type.GetType("System.Int32"));
-
-                DataColumn JanColumn = new DataColumn("Jan", Type.GetType("System.String"));
-                DataColumn FebColumn = new DataColumn("Feb", Type.GetType("System.String"));
-                DataColumn MarColumn = new DataColumn("Mar", Type.GetType("System.String"));
-                DataColumn AprColumn = new DataColumn("Apr", Type.GetType("System.String"));
-                DataColumn MayColumn = new DataColumn("May", Type.GetType("System.String"));
-                DataColumn JunColumn = new DataColumn("Jun", Type.GetType("System.String"));
-                DataColumn JulColumn = new DataColumn("Jul", Type.GetType("System.String"));
-                DataColumn AugColumn = new DataColumn("Aug", Type.GetType("System.String"));
-                DataColumn SepColumn = new DataColumn("Sep", Type.GetType("System.String"));
-                DataColumn OctColumn = new DataColumn("Oct", Type.GetType("System.String"));
-                DataColumn NovColumn = new DataColumn("Nov", Type.GetType("System.String"));
-                DataColumn DecColumn = new DataColumn("Dec", Type.GetType("System.String"));
-
                 wrTable.Columns.Add(IdColumn);
-                wrTable.Columns.Add(StatIdColumn);
-                wrTable.Columns.Add(NameColumn);
-                wrTable.Columns.Add(YearColumn);
-                wrTable.Columns.Add(JanColumn);
-                wrTable.Columns.Add(FebColumn);
-                wrTable.Columns.Add(MarColumn);
-                wrTable.Columns.Add(AprColumn);
-                wrTable.Columns.Add(MayColumn);
-                wrTable.Columns.Add(JunColumn);
-                wrTable.Columns.Add(JulColumn);
-                wrTable.Columns.Add(AugColumn);
-                wrTable.Columns.Add(SepColumn);
-                wrTable.Columns.Add(OctColumn);
-                wrTable.Columns.Add(NovColumn);
-                wrTable.Columns.Add(DecColumn);
-                wrTable.PrimaryKey = new DataColumn[] { wrTable.Columns["Id"] };
+                wrTable.Columns.Add(new DataColumn("Индекс ВМО", Type.GetType("System.Int32")));
+                wrTable.Columns.Add(new DataColumn("Название станции", Type.GetType("System.String")));
+                wrTable.PrimaryKey = new DataColumn[] { wrTable.Columns["ID"] };
             }
         }
 
@@ -164,82 +125,7 @@ namespace Climat
             }
         }
 
-        private void ParseWrTable(string line)
-        {
-            int statid = Convert.ToInt32(line.Substring(0, 5));
-            string name = statListTable.Select("Id = " + statid.ToString()).First()["Name"].ToString();
-            int year = Convert.ToInt32(line.Substring(6, 4));
-
-            List<string> month_list = GetMonthList();
-            int i = 11;
-            string jan = "", feb = "", mar = "", apr = "",
-                   may = "", jun = "", jul = "", aug = "",
-                   sep = "", oct = "", nov = "", dec = "";
-
-            if (month_list.Contains("Jan"))
-            {
-                jan = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Feb"))
-            {
-                feb = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Mar"))
-            {
-                mar = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Apr"))
-            {
-                apr = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("May"))
-            {
-                may = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Jun"))
-            {
-                jun = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Jul"))
-            {
-                jul = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Aug"))
-            {
-                aug = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Sep"))
-            {
-                sep = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Oct"))
-            {
-                oct = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Nov"))
-            {
-                nov = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            if (month_list.Contains("Dec"))
-            {
-                dec = line.Substring(i, 5).Replace(" ", string.Empty);
-                i += 6;
-            }
-            wrTable.Rows.Add(new object[] { null, statid, name, year, jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec });
-        }
-
-        private string final_path;
+        public static string final_path = "";
 
         private void ReadFromDirectory(string path)
         {
@@ -260,6 +146,10 @@ namespace Climat
                 statListTable.Clear();
                 fldTable.Clear();
                 wrTable.Clear();
+                while (wrTable.Columns.Count > 4)
+                {
+                    wrTable.Columns.RemoveAt(wrTable.Columns.Count - 1);
+                }
                 try
                 {
                     using (StreamReader sr = new StreamReader(statlist, Encoding.GetEncoding(1251)))
@@ -290,6 +180,13 @@ namespace Climat
                             string formatting = line.Substring(6, 7).Replace(" ", string.Empty);
                             string colName = line.Substring(15);
                             fldTable.Rows.Add(new object[] { id, colNum, formatting, colName });
+                            if (id == 1)
+                            {
+                                wrTable.Columns["Индекс ВМО"].ColumnName = colName;
+                            }
+                            else { 
+                                wrTable.Columns.Add(new DataColumn(colName, Type.GetType("System.String")));
+                            }
                         }
                     }
                 }
@@ -300,77 +197,29 @@ namespace Climat
 
                 if (wr.Length > 0)
                 {
-                    try
-                    {
-                        using (StreamReader sr = new StreamReader(wr, Encoding.GetEncoding(1251)))
-                        {
-                            string line;
-                            while ((line = sr.ReadLine()) != null)
-                            {
-                                ParseWrTable(line);
-                            }
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        MessageBox.Show("Файл не мог быть прочитан:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    ParseWrTable(wr);
                 }
                 else
                 {
                     foreach (DataRow item in statListTable.Rows)
                     {
-                        int id = item.Field<int>(statListTable.Columns["Id"]);
+                        int id = item.Field<int>(statListTable.Columns["ID"]);
                         string filename = statlist.Substring(0, statlist.LastIndexOf('\\') + 1) + id.ToString() + ".txt";
-                        try
-                        {
-                            using (StreamReader sr = new StreamReader(filename, Encoding.GetEncoding(1251)))
-                            {
-                                string line;
-                                while ((line = sr.ReadLine()) != null)
-                                {
-                                    ParseWrTable(line);
-                                }
-                            }
-                        }
-                        catch (IOException ex)
-                        {
-                            MessageBox.Show("Файл не мог быть прочитан:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                        ParseWrTable(filename);
                     }
                 }
                 
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, false, 0);
                 dataGridView1.DataSource = wrTable;
-                dataGridView1.Columns["Id"].Visible = false;
-                dataGridView1.Columns["StatId"].HeaderText = "Индекс ВМО";
-                dataGridView1.Columns["Name"].HeaderText = "Станция";
-                dataGridView1.Columns["Year"].HeaderText = "Год";
-                dataGridView1.Columns["Jan"].Visible = false;
-                dataGridView1.Columns["Feb"].Visible = false;
-                dataGridView1.Columns["Mar"].Visible = false;
-                dataGridView1.Columns["Apr"].Visible = false;
-                dataGridView1.Columns["May"].Visible = false;
-                dataGridView1.Columns["Jun"].Visible = false;
-                dataGridView1.Columns["Jul"].Visible = false;
-                dataGridView1.Columns["Aug"].Visible = false;
-                dataGridView1.Columns["Sep"].Visible = false;
-                dataGridView1.Columns["Oct"].Visible = false;
-                dataGridView1.Columns["Nov"].Visible = false;
-                dataGridView1.Columns["Dec"].Visible = false;
-                foreach (string month in GetMonthList())
-                {
-                    dataGridView1.Columns[month].HeaderText = MonthToString(month);
-                    dataGridView1.Columns[month].Visible = true;
-                }
+                dataGridView1.Columns[0].Visible = false;
                 dataGridView1.AutoResizeColumnHeadersHeight();
                 dataGridView1.AutoResizeColumns();
                 dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dataGridView1.Columns["Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                dataGridView1.Columns["Название станции"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
                 SendMessage(dataGridView1.Handle, WM_SETREDRAW, true, 0);
                 dataGridView1.Refresh();
                 button2.Enabled = true;
-                this.final_path = path;
+                Form1.final_path = path;
             }
             else
             {
@@ -378,73 +227,39 @@ namespace Climat
             }
         }
 
-        private List<int> GetStatList()
+        private void ParseWrTable(string path)
         {
-            List<int> list = new List<int>();
-            foreach (DataRow item in statListTable.Rows)
+            try
             {
-                list.Add(item.Field<int>(statListTable.Columns["Id"]));
-            }
-            return list;
-        }
-
-        private string MonthToString(string month)
-        {
-            switch (month)
-            {
-                case "Jan": return "Январь";
-                case "Feb": return "Февраль";
-                case "Mar": return "Март";
-                case "Apr": return "Апрель";
-                case "May": return "Май";
-                case "Jun": return "Июнь";
-                case "Jul": return "Июль";
-                case "Aug": return "Август";
-                case "Sep": return "Сентябрь";
-                case "Oct": return "Октябрь";
-                case "Nov": return "Ноябрь";
-                case "Dec": return "Декабрь";
-                default: return "";
-            }
-        }
-
-        private string StringToMonth(string str)
-        {
-            switch (str)
-            {
-                case "Январь": return "Jan";
-                case "Февраль": return "Feb";
-                case "Март": return "Mar";
-                case "Апрель": return "Apr";
-                case "Май": return "May";
-                case "Июнь": return "Jun";
-                case "Июль": return "Jul";
-                case "Август": return "Aug";
-                case "Сентябрь": return "Sep";
-                case "Октябрь": return "Oct";
-                case "Ноябрь": return "Nov";
-                case "Декабрь": return "Dec";
-                default: return "";
-            }
-        }
-
-        private List<string> GetMonthList()
-        {
-            List<string> list = new List<string>();
-            foreach (DataRow item in fldTable.Rows)
-            {
-                string col_name = StringToMonth(item.Field<string>(fldTable.Columns["ColName"]));
-                if (!String.IsNullOrEmpty(col_name))
+                using (StreamReader sr = new StreamReader(path, Encoding.GetEncoding(1251)))
                 {
-                    list.Add(col_name);
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        DataRow row = wrTable.NewRow();
+                        int startIndex = 0;
+                        for (int i = 1; i <= fldTable.Rows.Count; i++)
+                        {
+                            string format = fldTable.Select("ID = " + i.ToString()).First()["Формат"].ToString();
+                            string field_name = fldTable.Select("ID = " + i.ToString()).First()["Название столбца"].ToString();
+                            int length = Convert.ToInt32(Regex.Replace(format, @"\,\d+", ""));
+                            row[field_name] = line.Substring(startIndex, length).Trim();
+                            startIndex += length + 1;
+                        }
+                        row[2] = statListTable.Select("ID = " + row[1].ToString()).First()["Название станции"].ToString();
+                        wrTable.Rows.Add(row);
+                    }
                 }
             }
-            return list;
+            catch (IOException ex)
+            {
+                MessageBox.Show("Файл не мог быть прочитан:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Form2 form2 = new Form2(wrTable, GetStatList(), GetMonthList(), final_path);
+            Form2 form2 = new Form2();
             form2.ShowDialog();
         }
     }
